@@ -11,10 +11,18 @@ import org.json.JSONObject;
 
 public class HyperSchemaLoader {
 
+	/**
+	 * Construct {@link HyperSchema} object from a JSONObject of JSON Hyper
+	 * Schema.
+	 *
+	 * @param hyperSchema
+	 *            JSONObject of JSON Hyper Schema
+	 * @return HyperSchema
+	 */
 	public static HyperSchema load(JSONObject hyperSchema) {
 		Objects.requireNonNull(hyperSchema, "hyperSchema must not be null");
 		requireKey(hyperSchema, "links", JSONArray.class, "/links");
-		Map<String, Schema> routes = new HashMap<>();
+		Map<HyperSchema.EndPoint, Schema> routes = new HashMap<>();
 		JSONArray links = hyperSchema.getJSONArray("links");
 		for (int i = 0; i < links.length(); i++) {
 			Object obj = links.get(i);
@@ -27,7 +35,10 @@ public class HyperSchemaLoader {
 			if (linkDef.has("method") && linkDef.has("schema")) {
 				requireClassIs(linkDef.get("method"), String.class, "/links/" + i + "/method");
 				requireClassIs(linkDef.get("schema"), JSONObject.class, "/links/" + i + "/schema");
-				routes.put(linkDef.get("method") + " " + href, SchemaLoader.load(linkDef.getJSONObject("schema")));
+				String encType = linkDef.has("encType") && linkDef.get("encType") instanceof String ?
+						linkDef.getString("encType") : HyperSchema.DEFAULT_ENC_TYPE;
+				HyperSchema.EndPoint endPoint = HyperSchema.EndPoint.of(linkDef.getString("method"), href, encType);
+				routes.put(endPoint, SchemaLoader.load(linkDef.getJSONObject("schema")));
 			}
 		}
 		return HyperSchema.of(routes);
