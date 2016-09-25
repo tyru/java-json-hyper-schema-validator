@@ -1,4 +1,4 @@
-package com.github.tyru.json.hyper.schema;
+package me.tyru.json.hyper.schema;
 
 import java.io.IOException;
 import java.util.Arrays;

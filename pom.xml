@@ -1,6 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
+	<name>json-hyper-schema</name>
 	<groupId>com.github.tyru.json-hyper-schema</groupId>
 	<artifactId>json-hyper-schema</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
@@ -45,4 +46,28 @@
 			</plugin>
 		</plugins>
 	</build>
+
+	<licenses>
+		<license>
+			<name>MIT License</name>
+			<url>http://www.opensource.org/licenses/mit-license.php</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+	<scm>
+		<url>https://github.com/tyru/java-json-hyper-schema-validator</url>
+		<connection>scm:git:git@github.com:tyru/java-json-hyper-schema-validator.git</connection>
+		<developerConnection>scm:git:git@github.com:tyru/java-json-hyper-schema-validator.git</developerConnection>
+	</scm>
+	<description>JSON Hyper Schema validator for java</description>
+	<url>https://github.com/tyru/java-json-hyper-schema-validator</url>
+
+	<developers>
+		<developer>
+			<id>tyru</id>
+			<name>Takuya Fujiwara</name>
+			<email>tyru.exe@gmail.com</email>
+			<url>http://tyru.github.io/</url>
+		</developer>
+	</developers>
 </project>
