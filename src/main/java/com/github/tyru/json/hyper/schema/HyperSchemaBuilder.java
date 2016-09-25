@@ -12,7 +12,6 @@ import org.json.JSONObject;
 public class HyperSchemaBuilder {
 
 	private JSONObject hyperSchema;
-	private boolean validateMethod = false;
 	private boolean validateMediaType = false;
 
 	/**
@@ -27,18 +26,6 @@ public class HyperSchemaBuilder {
 		HyperSchemaBuilder builder = new HyperSchemaBuilder();
 		builder.hyperSchema = hyperSchema;
 		return builder;
-	}
-
-	/**
-	 * If this flag is set to false, HTTP method is not validated. Default is
-	 * false.
-	 *
-	 * @param validateMethod
-	 * @return HyperSchemaBuilder
-	 */
-	public HyperSchemaBuilder validateMethod(boolean validateMethod) {
-		this.validateMethod = validateMethod;
-		return this;
 	}
 
 	/**
@@ -83,7 +70,7 @@ public class HyperSchemaBuilder {
 				routes.put(endPoint, SchemaLoader.load(linkDef.getJSONObject("schema")));
 			}
 		}
-		return HyperSchema.of(routes, validateMethod, validateMediaType);
+		return HyperSchema.of(routes, validateMediaType);
 	}
 
 	private static void requireKey(JSONObject hyperSchema, String key, Class<?> cls, String pointer) {

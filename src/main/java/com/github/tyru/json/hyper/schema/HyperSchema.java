@@ -11,6 +11,7 @@ import java.util.Set;
 
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.io.IOUtils;
 import org.everit.json.schema.Schema;
@@ -19,11 +20,10 @@ import org.json.JSONObject;
 public class HyperSchema {
 
 	public static final String DEFAULT_ENC_TYPE = "application/json";
-	private static final Set<String> ACCEPTABLE_HTTP_METHODS = Collections
+	private static final Set<String> ALLOW_ENTITY_METHODS = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("POST", "PUT", "PATCH")));
 
 	private /* final */ Map<EndPoint, Schema> routes;
-	private /* final */ boolean validateMethod;
 	private /* final */ boolean validateMediaType;
 
 	/**
@@ -57,7 +57,9 @@ public class HyperSchema {
 			return encType;
 		}
 
-		private EndPoint() {}
+		private EndPoint() {
+		}
+
 		public static EndPoint of(String method, String href, String encType) {
 			Objects.requireNonNull(method, "method is null");
 			Objects.requireNonNull(href, "href is null");
@@ -81,10 +83,9 @@ public class HyperSchema {
 	 */
 	// TODO: Create annotation to make compilation error when
 	// being used by a code outside this package.
-	public static HyperSchema of(Map<EndPoint, Schema> routes, boolean validateMethod, boolean validateMediaType) {
+	public static HyperSchema of(Map<EndPoint, Schema> routes, boolean validateMediaType) {
 		HyperSchema obj = new HyperSchema();
 		obj.routes = routes;
-		obj.validateMethod = validateMethod;
 		obj.validateMediaType = validateMediaType;
 		return obj;
 	}
@@ -160,16 +161,8 @@ public class HyperSchema {
 	public void validate(ContainerRequestContext context, String charset) throws IOException {
 		Objects.requireNonNull(context, "context");
 		Objects.requireNonNull(charset, "charset");
-		Objects.requireNonNull(context.getMethod(), "context.getMethod()");
-		if (!isMethod(context.getMethod())) {
-			// Throw or skip
-			if (validateMethod) {
-				throw new IllegalArgumentException(context.getMethod() + "' method does not have entity");
-			} else {
-				return;
-			}
-		}
 		Objects.requireNonNull(context.getMediaType(), "context.getMediaType()");
+
 		if (!isJSONMediaType(context.getMediaType())) {
 			// Throw or skip
 			if (validateMediaType) {
@@ -181,23 +174,42 @@ public class HyperSchema {
 		validateEntity(context, charset);
 	}
 
-	private boolean isMethod(String httpMethod) {
-		return ACCEPTABLE_HTTP_METHODS.contains(httpMethod);
-	}
-
 	private boolean isJSONMediaType(MediaType mediaType) {
 		return "application".equals(mediaType.getType()) && "json".equals(mediaType.getSubtype());
 	}
 
+	/**
+	 * 5.6.3.  schema
+	 * http://json-schema.org/latest/json-schema-hypermedia.html#anchor38
+	 *
+	 * "This property contains a schema which defines the acceptable structure of
+	 * the submitted request. For a GET request, this schema would define the
+	 * properties for the query string and for a POST request, this would define
+	 * the body."
+	 *
+	 * @param context
+	 * @param charset
+	 * @throws IOException
+	 */
 	private void validateEntity(ContainerRequestContext context, String charset) throws IOException {
-		String json = getEntityWithKeepingStream(context, charset);
-		if (json == null || json.isEmpty()) {
-			return;
-		}
 		String method = context.getMethod();
 		String href = context.getUriInfo().getPath();
 		String encType = context.getMediaType().getType() + "/" + context.getMediaType().getSubtype();
-		validate(method, href, encType, new JSONObject(json));
+		if (ALLOW_ENTITY_METHODS.contains(method)) {
+			String json = getEntityWithKeepingStream(context, charset);
+			if (json == null || json.isEmpty()) {
+				return;
+			}
+			validate(method, href, encType, new JSONObject(json));
+		} else {
+			// This has two problems:
+			// 1. Duplicate keys
+			// 2. It will throw ValidatorException when the property type in
+			// hyper schema is NOT "string" (because query parameters are
+			// string).
+			MultivaluedMap<String, String> params = context.getUriInfo().getQueryParameters();
+			validate(method, href, encType, new JSONObject(params));
+		}
 	}
 
 	private String getEntityWithKeepingStream(ContainerRequestContext context, String charset) throws IOException {
