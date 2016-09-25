@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
@@ -24,7 +25,6 @@ public class HyperSchema {
 	private /* final */ Map<EndPoint, Schema> routes;
 	private /* final */ boolean validateMethod;
 	private /* final */ boolean validateMediaType;
-	private /* final */ boolean validateEntity;
 
 	/**
 	 * Endpoint can be represented by the combination of method * href *
@@ -57,7 +57,11 @@ public class HyperSchema {
 			return encType;
 		}
 
+		private EndPoint() {}
 		public static EndPoint of(String method, String href, String encType) {
+			Objects.requireNonNull(method, "method is null");
+			Objects.requireNonNull(href, "href is null");
+			Objects.requireNonNull(encType, "encType is null");
 			EndPoint obj = new EndPoint();
 			obj.method = method;
 			obj.href = href;
@@ -77,13 +81,11 @@ public class HyperSchema {
 	 */
 	// TODO: Create annotation to make compilation error when
 	// being used by a code outside this package.
-	public static HyperSchema of(Map<EndPoint, Schema> routes, boolean validateMethod, boolean validateMediaType,
-			boolean validateEntity) {
+	public static HyperSchema of(Map<EndPoint, Schema> routes, boolean validateMethod, boolean validateMediaType) {
 		HyperSchema obj = new HyperSchema();
 		obj.routes = routes;
 		obj.validateMethod = validateMethod;
 		obj.validateMediaType = validateMediaType;
-		obj.validateEntity = validateEntity;
 		return obj;
 	}
 
@@ -156,27 +158,35 @@ public class HyperSchema {
 	 * @throws IOException
 	 */
 	public void validate(ContainerRequestContext context, String charset) throws IOException {
-		if (validateMethod) {
-			validateHTTPMethod(context.getMethod());
+		Objects.requireNonNull(context, "context");
+		Objects.requireNonNull(charset, "charset");
+		Objects.requireNonNull(context.getMethod(), "context.getMethod()");
+		if (!isMethod(context.getMethod())) {
+			// Throw or skip
+			if (validateMethod) {
+				throw new IllegalArgumentException(context.getMethod() + "' method does not have entity");
+			} else {
+				return;
+			}
 		}
-		if (validateMediaType) {
-			validateJSONMediaType(context.getMediaType());
+		Objects.requireNonNull(context.getMediaType(), "context.getMediaType()");
+		if (!isJSONMediaType(context.getMediaType())) {
+			// Throw or skip
+			if (validateMediaType) {
+				throw new IllegalArgumentException("Query media type is not 'application/json'.");
+			} else {
+				return;
+			}
 		}
-		if (validateEntity) {
-			validateEntity(context, charset);
-		}
+		validateEntity(context, charset);
 	}
 
-	private void validateJSONMediaType(MediaType mediaType) {
-		if (!"application".equals(mediaType.getType()) && "json".equals(mediaType.getSubtype())) {
-			throw new IllegalArgumentException("Query media type is not 'application/json'.");
-		}
+	private boolean isMethod(String httpMethod) {
+		return ACCEPTABLE_HTTP_METHODS.contains(httpMethod);
 	}
 
-	private void validateHTTPMethod(String httpMethod) {
-		if (!ACCEPTABLE_HTTP_METHODS.contains(httpMethod)) {
-			throw new IllegalArgumentException(httpMethod + "' method does not have entity");
-		}
+	private boolean isJSONMediaType(MediaType mediaType) {
+		return "application".equals(mediaType.getType()) && "json".equals(mediaType.getSubtype());
 	}
 
 	private void validateEntity(ContainerRequestContext context, String charset) throws IOException {
