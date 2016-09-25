@@ -14,10 +14,12 @@ public class HyperSchemaBuilder {
 	private JSONObject hyperSchema;
 	private boolean validateMediaType = false;
 
+	private HyperSchemaBuilder() {
+	}
+
 	/**
-	 * A start point of builder chains.
-	 * Sets a hyper schema object which represents JSON hyper schema.
-	 * NOTE: This method is static method.
+	 * A start point of builder chains. Sets a hyper schema object which
+	 * represents JSON hyper schema. NOTE: This method is static method.
 	 *
 	 * @param hyperSchema
 	 * @return HyperSchemaBuilder
@@ -70,7 +72,7 @@ public class HyperSchemaBuilder {
 				routes.put(endPoint, SchemaLoader.load(linkDef.getJSONObject("schema")));
 			}
 		}
-		return HyperSchema.of(routes, validateMediaType);
+		return new HyperSchema(routes, validateMediaType);
 	}
 
 	private static void requireKey(JSONObject hyperSchema, String key, Class<?> cls, String pointer) {

@@ -23,8 +23,8 @@ public class HyperSchema {
 	private static final Set<String> ALLOW_ENTITY_METHODS = Collections
 			.unmodifiableSet(new HashSet<>(Arrays.asList("POST", "PUT", "PATCH")));
 
-	private /* final */ Map<EndPoint, Schema> routes;
-	private /* final */ boolean validateMediaType;
+	private final Map<EndPoint, Schema> routes;
+	private final boolean validateMediaType;
 
 	/**
 	 * Endpoint can be represented by the combination of method * href *
@@ -40,40 +40,17 @@ public class HyperSchema {
 	 * @author tyru
 	 *
 	 */
+	@lombok.Getter
+	@lombok.EqualsAndHashCode
+	@lombok.RequiredArgsConstructor(staticName = "of")
 	static class EndPoint {
-		private String method;
-		private String href;
-		private String encType;
-
-		public String getMethod() {
-			return method;
-		}
-
-		public String getHref() {
-			return href;
-		}
-
-		public String getEncType() {
-			return encType;
-		}
-
-		private EndPoint() {
-		}
-
-		public static EndPoint of(String method, String href, String encType) {
-			Objects.requireNonNull(method, "method is null");
-			Objects.requireNonNull(href, "href is null");
-			Objects.requireNonNull(encType, "encType is null");
-			EndPoint obj = new EndPoint();
-			obj.method = method;
-			obj.href = href;
-			obj.encType = encType;
-			return obj;
-		}
+		@lombok.NonNull private String method;
+		@lombok.NonNull private String href;
+		@lombok.NonNull private String encType;
 	}
 
 	/**
-	 * NOTE: This method is not intended to be used by user (You!) because
+	 * NOTE: This constructor is not intended to be used by user (You!) because
 	 * internal-use only. Use {@link HyperSchemaBuilder#load(JSONObject)} to
 	 * create HyperSchema object.
 	 *
@@ -83,17 +60,17 @@ public class HyperSchema {
 	 */
 	// TODO: Create annotation to make compilation error when
 	// being used by a code outside this package.
-	public static HyperSchema of(Map<EndPoint, Schema> routes, boolean validateMediaType) {
-		HyperSchema obj = new HyperSchema();
-		obj.routes = routes;
-		obj.validateMediaType = validateMediaType;
-		return obj;
+	HyperSchema(Map<EndPoint, Schema> routes, boolean validateMediaType) {
+		this.routes = routes;
+		this.validateMediaType = validateMediaType;
 	}
 
 	/**
 	 * If a given URI path matches schema's route definitions, returns non-null
-	 * Optional schema object. Otherwise, returns null Optional object.
+	 * Optional schema object. Otherwise, returns null Optional object. This is
+	 * same as {@code match(method, href, DEFAULT_ENC_TYPE)}.
 	 *
+	 * @see {@link HyperSchema#match(String, String, String)}
 	 * @param method
 	 *            HTTP method
 	 * @param href
@@ -120,6 +97,11 @@ public class HyperSchema {
 	}
 
 	/**
+	 * Shorthand method for {@link HyperSchema#match(String, String, String)}
+	 * and {@link Schema#validate(Object)} This method is identical to the
+	 * following code:
+	 * {@code match(method, href, DEFAULT_ENC_TYPE).ifPresent(schema -> schema.validate(jsonObject));}
+	 *
 	 * @see {@link HyperSchema#validate(String, String, String, JSONObject)}
 	 * @param method
 	 * @param href
@@ -130,9 +112,9 @@ public class HyperSchema {
 	}
 
 	/**
-	 * Shorthand method for {@link HyperSchema#match(String, String)} and
-	 * {@link Schema#validate(Object)} This method is identical to the following
-	 * code:
+	 * Shorthand method for {@link HyperSchema#match(String, String, String)}
+	 * and {@link Schema#validate(Object)} This method is identical to the
+	 * following code:
 	 * {@code match(method, href, encType).ifPresent(schema -> schema.validate(jsonObject));}
 	 *
 	 * @param method
@@ -144,6 +126,8 @@ public class HyperSchema {
 	}
 
 	/**
+	 * JAX-RS support. This is same as {@code validate(context, "UTF-8")}.
+	 *
 	 * @see {@link HyperSchema#validate(ContainerRequestContext, String)}
 	 * @param context
 	 * @throws IOException
@@ -179,11 +163,11 @@ public class HyperSchema {
 	}
 
 	/**
-	 * 5.6.3.  schema
+	 * 5.6.3. schema
 	 * http://json-schema.org/latest/json-schema-hypermedia.html#anchor38
 	 *
-	 * "This property contains a schema which defines the acceptable structure of
-	 * the submitted request. For a GET request, this schema would define the
+	 * "This property contains a schema which defines the acceptable structure
+	 * of the submitted request. For a GET request, this schema would define the
 	 * properties for the query string and for a POST request, this would define
 	 * the body."
 	 *
