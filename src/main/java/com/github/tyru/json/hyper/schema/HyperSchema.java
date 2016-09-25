@@ -1,15 +1,30 @@
 package com.github.tyru.json.hyper.schema;
 
+import java.io.IOException;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+import javax.ws.rs.container.ContainerRequestContext;
+import javax.ws.rs.core.MediaType;
+
+import org.apache.commons.io.IOUtils;
 import org.everit.json.schema.Schema;
 import org.json.JSONObject;
 
 public class HyperSchema {
 
 	public static final String DEFAULT_ENC_TYPE = "application/json";
-	private Map<EndPoint, Schema> routes;
+	private static final Set<String> ACCEPTABLE_HTTP_METHODS = Collections
+			.unmodifiableSet(new HashSet<>(Arrays.asList("POST", "PUT", "PATCH")));
+
+	private /* final */ Map<EndPoint, Schema> routes;
+	private /* final */ boolean validateMethod;
+	private /* final */ boolean validateMediaType;
+	private /* final */ boolean validateEntity;
 
 	/**
 	 * Endpoint can be represented by the combination of method * href *
@@ -53,17 +68,22 @@ public class HyperSchema {
 
 	/**
 	 * NOTE: This method is not intended to be used by user (You!) because
-	 * internal-use only. Use {@link HyperSchemaLoader#load(JSONObject)} to
+	 * internal-use only. Use {@link HyperSchemaBuilder#load(JSONObject)} to
 	 * create HyperSchema object.
 	 *
 	 * @param routes
+	 * @param doValidation
 	 * @return HyperSchema
 	 */
 	// TODO: Create annotation to make compilation error when
 	// being used by a code outside this package.
-	public static HyperSchema of(Map<EndPoint, Schema> routes) {
+	public static HyperSchema of(Map<EndPoint, Schema> routes, boolean validateMethod, boolean validateMediaType,
+			boolean validateEntity) {
 		HyperSchema obj = new HyperSchema();
 		obj.routes = routes;
+		obj.validateMethod = validateMethod;
+		obj.validateMediaType = validateMediaType;
+		obj.validateEntity = validateEntity;
 		return obj;
 	}
 
@@ -118,5 +138,62 @@ public class HyperSchema {
 	 */
 	public void validate(String method, String href, String encType, JSONObject jsonObject) {
 		match(method, href, encType).ifPresent(schema -> schema.validate(jsonObject));
+	}
+
+	/**
+	 * @see {@link HyperSchema#validate(ContainerRequestContext, String)}
+	 * @param context
+	 * @throws IOException
+	 */
+	public void validate(ContainerRequestContext context) throws IOException {
+		validate(context, "UTF-8");
+	}
+
+	/**
+	 * JAX-RS support.
+	 *
+	 * @param context
+	 * @throws IOException
+	 */
+	public void validate(ContainerRequestContext context, String charset) throws IOException {
+		if (validateMethod) {
+			validateHTTPMethod(context.getMethod());
+		}
+		if (validateMediaType) {
+			validateJSONMediaType(context.getMediaType());
+		}
+		if (validateEntity) {
+			validateEntity(context, charset);
+		}
+	}
+
+	private void validateJSONMediaType(MediaType mediaType) {
+		if (!"application".equals(mediaType.getType()) && "json".equals(mediaType.getSubtype())) {
+			throw new IllegalArgumentException("Query media type is not 'application/json'.");
+		}
+	}
+
+	private void validateHTTPMethod(String httpMethod) {
+		if (!ACCEPTABLE_HTTP_METHODS.contains(httpMethod)) {
+			throw new IllegalArgumentException(httpMethod + "' method does not have entity");
+		}
+	}
+
+	private void validateEntity(ContainerRequestContext context, String charset) throws IOException {
+		String json = getEntityWithKeepingStream(context, charset);
+		if (json == null || json.isEmpty()) {
+			return;
+		}
+		String method = context.getMethod();
+		String href = context.getUriInfo().getPath();
+		String encType = context.getMediaType().getType() + "/" + context.getMediaType().getSubtype();
+		validate(method, href, encType, new JSONObject(json));
+	}
+
+	private String getEntityWithKeepingStream(ContainerRequestContext context, String charset) throws IOException {
+		String json = IOUtils.toString(context.getEntityStream(), charset);
+		// A user's controller method won't be called w/o this!
+		context.setEntityStream(IOUtils.toInputStream(json));
+		return json;
 	}
 }
