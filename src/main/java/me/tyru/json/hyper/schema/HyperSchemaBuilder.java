@@ -9,6 +9,9 @@ import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
+import lombok.NonNull;
+import me.tyru.json.hyper.schema.exception.DuplicateLinkDefinitionException;
+
 public class HyperSchemaBuilder {
 
 	private JSONObject hyperSchema;
@@ -24,7 +27,7 @@ public class HyperSchemaBuilder {
 	 * @param hyperSchema
 	 * @return HyperSchemaBuilder
 	 */
-	public static HyperSchemaBuilder hyperSchema(JSONObject hyperSchema) {
+	public static HyperSchemaBuilder hyperSchema(@NonNull JSONObject hyperSchema) {
 		HyperSchemaBuilder builder = new HyperSchemaBuilder();
 		builder.hyperSchema = hyperSchema;
 		return builder;
@@ -69,7 +72,11 @@ public class HyperSchemaBuilder {
 				String encType = linkDef.has("encType") && linkDef.get("encType") instanceof String
 						? linkDef.getString("encType") : HyperSchema.DEFAULT_ENC_TYPE;
 				HyperSchema.EndPoint endPoint = HyperSchema.EndPoint.of(linkDef.getString("method"), href, encType);
-				routes.put(endPoint, SchemaLoader.load(linkDef.getJSONObject("schema")));
+				if (!routes.containsKey(endPoint)) {
+					routes.put(endPoint, SchemaLoader.load(linkDef.getJSONObject("schema")));
+				} else {
+					throw new DuplicateLinkDefinitionException("Duplicate key: " + endPoint.toString());
+				}
 			}
 		}
 		return new HyperSchema(routes, validateMediaType);

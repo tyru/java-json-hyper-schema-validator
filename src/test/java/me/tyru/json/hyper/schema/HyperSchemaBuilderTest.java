@@ -13,6 +13,7 @@ import org.json.JSONObject;
 import org.junit.Test;
 
 import me.tyru.json.hyper.schema.HyperSchema.EndPoint;
+import me.tyru.json.hyper.schema.exception.DuplicateLinkDefinitionException;
 import mockit.Deencapsulation;
 
 /**
@@ -121,5 +122,20 @@ public class HyperSchemaBuilderTest {
 		assertThat(routes.size(), is(1));
 		assertThat(routes, hasKey(EndPoint.of("GET", "/hello", "application/json")));
 		assertThat(validateMediaType, is(true));
+	}
+
+	/**
+	 *@see {@link me.tyru.json.hyper.schema.HyperSchemaBuilder#hyperSchema(org.json.JSONObject)}
+	 *@see {@link me.tyru.json.hyper.schema.HyperSchemaBuilder#validateMediaType(boolean)}
+	 */
+	@Test
+	public void test_throw_when_duplicate_definitions() {
+		try {
+			String json = "{\"links\": [{\"rel\": \"instances\", \"method\": \"GET\", \"href\": \"/hello\", \"schema\": {}}, {\"rel\": \"instances\", \"method\": \"GET\", \"href\": \"/hello\", \"schema\": {}}]}";
+			HyperSchemaBuilder.hyperSchema(new JSONObject(json)).validateMediaType(true).build();
+			fail("Must throw when duplicate definitions!");
+		} catch (Throwable e) {
+			assertThat(e, is(instanceOf(DuplicateLinkDefinitionException.class)));
+		}
 	}
 }

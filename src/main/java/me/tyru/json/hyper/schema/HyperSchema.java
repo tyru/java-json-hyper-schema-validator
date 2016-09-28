@@ -17,6 +17,11 @@ import org.apache.commons.io.IOUtils;
 import org.everit.json.schema.Schema;
 import org.json.JSONObject;
 
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NonNull;
+import lombok.RequiredArgsConstructor;
+
 public class HyperSchema {
 
 	public static final String DEFAULT_ENC_TYPE = "application/json";
@@ -40,13 +45,13 @@ public class HyperSchema {
 	 * @author tyru
 	 *
 	 */
-	@lombok.Getter
-	@lombok.EqualsAndHashCode
-	@lombok.RequiredArgsConstructor(staticName = "of")
+	@Getter
+	@EqualsAndHashCode
+	@RequiredArgsConstructor(staticName = "of")
 	static class EndPoint {
-		@lombok.NonNull private String method;
-		@lombok.NonNull private String href;
-		@lombok.NonNull private String encType;
+		@NonNull private String method;
+		@NonNull private String href;
+		@NonNull private String encType;
 	}
 
 	/**
@@ -60,7 +65,7 @@ public class HyperSchema {
 	 */
 	// TODO: Create annotation to make compilation error when
 	// being used by a code outside this package.
-	HyperSchema(Map<EndPoint, Schema> routes, boolean validateMediaType) {
+	HyperSchema(@NonNull Map<EndPoint, Schema> routes, boolean validateMediaType) {
 		this.routes = routes;
 		this.validateMediaType = validateMediaType;
 	}

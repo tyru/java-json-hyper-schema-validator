@@ -16,6 +16,7 @@ public class HyperSchemaTest {
 	 */
 	@Test
 	public void testMatchStringString() {
+		// TODO
 		fail("Not Implemented Yet");
 	}
 
@@ -25,6 +26,7 @@ public class HyperSchemaTest {
 	 */
 	@Test
 	public void testMatchStringStringString() {
+		// TODO
 		fail("Not Implemented Yet");
 	}
 
@@ -34,6 +36,7 @@ public class HyperSchemaTest {
 	 */
 	@Test
 	public void testValidateStringStringJSONObject() {
+		// TODO
 		fail("Not Implemented Yet");
 	}
 
@@ -43,6 +46,7 @@ public class HyperSchemaTest {
 	 */
 	@Test
 	public void testValidateStringStringStringJSONObject() {
+		// TODO
 		fail("Not Implemented Yet");
 	}
 
@@ -52,6 +56,7 @@ public class HyperSchemaTest {
 	 */
 	@Test
 	public void testValidateContainerRequestContext() {
+		// TODO
 		fail("Not Implemented Yet");
 	}
 
@@ -61,6 +66,7 @@ public class HyperSchemaTest {
 	 */
 	@Test
 	public void testValidateContainerRequestContextString() {
+		// TODO
 		fail("Not Implemented Yet");
 	}
 
