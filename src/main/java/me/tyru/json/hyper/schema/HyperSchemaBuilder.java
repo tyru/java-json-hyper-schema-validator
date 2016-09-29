@@ -9,7 +9,6 @@ import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import lombok.NonNull;
 import me.tyru.json.hyper.schema.exception.DuplicateLinkDefinitionException;
 
 public class HyperSchemaBuilder {
@@ -27,7 +26,8 @@ public class HyperSchemaBuilder {
 	 * @param hyperSchema
 	 * @return HyperSchemaBuilder
 	 */
-	public static HyperSchemaBuilder hyperSchema(@NonNull JSONObject hyperSchema) {
+	public static HyperSchemaBuilder hyperSchema(JSONObject hyperSchema) {
+		Objects.requireNonNull(hyperSchema, "hyperSchema must not be null");
 		HyperSchemaBuilder builder = new HyperSchemaBuilder();
 		builder.hyperSchema = hyperSchema;
 		return builder;
@@ -56,7 +56,7 @@ public class HyperSchemaBuilder {
 	public HyperSchema build() {
 		Objects.requireNonNull(hyperSchema, "hyperSchema must not be null");
 		requireKey(hyperSchema, "links", JSONArray.class, "/links");
-		Map<HyperSchema.EndPoint, Schema> routes = new HashMap<>();
+		Map<EndPoint, Schema> routes = new HashMap<>();
 		JSONArray links = hyperSchema.getJSONArray("links");
 		for (int i = 0; i < links.length(); i++) {
 			Object obj = links.get(i);
@@ -71,7 +71,7 @@ public class HyperSchemaBuilder {
 				requireClassIs(linkDef.get("schema"), JSONObject.class, "/links/" + i + "/schema");
 				String encType = linkDef.has("encType") && linkDef.get("encType") instanceof String
 						? linkDef.getString("encType") : HyperSchema.DEFAULT_ENC_TYPE;
-				HyperSchema.EndPoint endPoint = HyperSchema.EndPoint.of(linkDef.getString("method"), href, encType);
+				EndPoint endPoint = EndPoint.of(linkDef.getString("method"), href, encType);
 				if (!routes.containsKey(endPoint)) {
 					routes.put(endPoint, SchemaLoader.load(linkDef.getJSONObject("schema")));
 				} else {

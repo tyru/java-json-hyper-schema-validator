@@ -12,7 +12,6 @@ import org.everit.json.schema.Schema;
 import org.json.JSONObject;
 import org.junit.Test;
 
-import me.tyru.json.hyper.schema.HyperSchema.EndPoint;
 import me.tyru.json.hyper.schema.exception.DuplicateLinkDefinitionException;
 import mockit.Deencapsulation;
 
@@ -137,5 +136,25 @@ public class HyperSchemaBuilderTest {
 		} catch (Throwable e) {
 			assertThat(e, is(instanceOf(DuplicateLinkDefinitionException.class)));
 		}
+	}
+
+	/**
+	 *@see {@link me.tyru.json.hyper.schema.HyperSchemaBuilder#hyperSchema(org.json.JSONObject)}
+	 *@see {@link me.tyru.json.hyper.schema.HyperSchemaBuilder#validateMediaType(boolean)}
+	 */
+	@Test
+	public void test_link_definition_lookup_1() {
+		// TODO
+		fail("Not Implemented Yet");
+	}
+
+	/**
+	 *@see {@link me.tyru.json.hyper.schema.HyperSchemaBuilder#hyperSchema(org.json.JSONObject)}
+	 *@see {@link me.tyru.json.hyper.schema.HyperSchemaBuilder#validateMediaType(boolean)}
+	 */
+	@Test
+	public void test_link_definition_lookup_2() {
+		// TODO
+		fail("Not Implemented Yet");
 	}
 }

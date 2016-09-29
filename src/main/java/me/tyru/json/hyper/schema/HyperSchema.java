@@ -17,11 +17,6 @@ import org.apache.commons.io.IOUtils;
 import org.everit.json.schema.Schema;
 import org.json.JSONObject;
 
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NonNull;
-import lombok.RequiredArgsConstructor;
-
 public class HyperSchema {
 
 	public static final String DEFAULT_ENC_TYPE = "application/json";
@@ -30,29 +25,6 @@ public class HyperSchema {
 
 	private final Map<EndPoint, Schema> routes;
 	private final boolean validateMediaType;
-
-	/**
-	 * Endpoint can be represented by the combination of method * href *
-	 * encType.
-	 *
-	 * 5.6.2. encType
-	 * http://json-schema.org/latest/json-schema-hypermedia.html#anchor37
-	 *
-	 * "If no encType or method is specified, only the single URI specified by
-	 * the href property is defined. If the method is POST, "application/json"
-	 * is the default media type. "
-	 *
-	 * @author tyru
-	 *
-	 */
-	@Getter
-	@EqualsAndHashCode
-	@RequiredArgsConstructor(staticName = "of")
-	static class EndPoint {
-		@NonNull private String method;
-		@NonNull private String href;
-		@NonNull private String encType;
-	}
 
 	/**
 	 * NOTE: This constructor is not intended to be used by user (You!) because
@@ -65,7 +37,9 @@ public class HyperSchema {
 	 */
 	// TODO: Create annotation to make compilation error when
 	// being used by a code outside this package.
-	HyperSchema(@NonNull Map<EndPoint, Schema> routes, boolean validateMediaType) {
+	HyperSchema(Map<EndPoint, Schema> routes, boolean validateMediaType) {
+		Objects.requireNonNull(routes, "routes must not be null");
+		Objects.requireNonNull(validateMediaType, "validateMediaType must not be null");
 		this.routes = routes;
 		this.validateMediaType = validateMediaType;
 	}
