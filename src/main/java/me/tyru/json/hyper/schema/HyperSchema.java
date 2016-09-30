@@ -9,11 +9,9 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
 import javax.ws.rs.container.ContainerRequestContext;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
 
-import org.apache.commons.io.IOUtils;
 import org.everit.json.schema.Schema;
 import org.json.JSONObject;
 
@@ -112,21 +110,46 @@ public class HyperSchema {
 	 * @throws IOException
 	 */
 	public void validate(ContainerRequestContext context) throws IOException {
-		validate(context, "UTF-8");
+		validate(JSONRequest.of(context), "UTF-8");
 	}
 
 	/**
-	 * JAX-RS support.
+	 * JAX-RS support. This is same as {@code validate(context, "UTF-8")}.
 	 *
 	 * @param context
 	 * @throws IOException
 	 */
 	public void validate(ContainerRequestContext context, String charset) throws IOException {
-		Objects.requireNonNull(context, "context");
-		Objects.requireNonNull(charset, "charset");
-		Objects.requireNonNull(context.getMediaType(), "context.getMediaType()");
+		validate(JSONRequest.of(context), charset);
+	}
 
-		if (!isJSONMediaType(context.getMediaType())) {
+	/**
+	 * HttpServletRequest support. This is same as {@code validate(request, "UTF-8")}.
+	 *
+	 * @see {@link HyperSchema#validate(HttpServletRequest, String)}
+	 * @param request
+	 * @throws IOException
+	 */
+	public void validate(HttpServletRequest request) throws IOException {
+		validate(JSONRequest.of(request), "UTF-8");
+	}
+
+	/**
+	 * HttpServletRequest support.
+	 *
+	 * @param request
+	 * @throws IOException
+	 */
+	public void validate(HttpServletRequest request, String charset) throws IOException {
+		validate(JSONRequest.of(request), charset);
+	}
+
+	private void validate(JSONRequest req, String charset) throws IOException {
+		Objects.requireNonNull(req, "request");
+		Objects.requireNonNull(charset, "charset");
+		Objects.requireNonNull(req.getEncType(), "req.getEncType()");
+
+		if (!"application/json".equals(req.getEncType())) {
 			// Throw or skip
 			if (validateMediaType) {
 				throw new IllegalArgumentException("Query media type is not 'application/json'.");
@@ -134,11 +157,7 @@ public class HyperSchema {
 				return;
 			}
 		}
-		validateEntity(context, charset);
-	}
-
-	private boolean isJSONMediaType(MediaType mediaType) {
-		return "application".equals(mediaType.getType()) && "json".equals(mediaType.getSubtype());
+		validateEntity(req, charset);
 	}
 
 	/**
@@ -154,31 +173,24 @@ public class HyperSchema {
 	 * @param charset
 	 * @throws IOException
 	 */
-	private void validateEntity(ContainerRequestContext context, String charset) throws IOException {
-		String method = context.getMethod();
-		String href = context.getUriInfo().getPath();
-		String encType = context.getMediaType().getType() + "/" + context.getMediaType().getSubtype();
+	private void validateEntity(JSONRequest req, String charset) throws IOException {
+		String method = req.getMethod();
+		String href = req.getHref();
+		String encType = req.getEncType();
 		if (ALLOW_ENTITY_METHODS.contains(method)) {
-			String json = getEntityWithKeepingStream(context, charset);
+			String json = req.getEntityWithKeepingStream(charset);
 			if (json == null || json.isEmpty()) {
 				return;
 			}
 			validate(method, href, encType, new JSONObject(json));
 		} else {
+			// TODO
 			// This has two problems:
 			// 1. Duplicate keys
 			// 2. It will throw ValidatorException when the property type in
 			// hyper schema is NOT "string" (because query parameters are
 			// string).
-			MultivaluedMap<String, String> params = context.getUriInfo().getQueryParameters();
-			validate(method, href, encType, new JSONObject(params));
+			validate(method, href, encType, new JSONObject(req.getQueryParameters()));
 		}
-	}
-
-	private String getEntityWithKeepingStream(ContainerRequestContext context, String charset) throws IOException {
-		String json = IOUtils.toString(context.getEntityStream(), charset);
-		// A user's controller method won't be called w/o this!
-		context.setEntityStream(IOUtils.toInputStream(json));
-		return json;
 	}
 }
