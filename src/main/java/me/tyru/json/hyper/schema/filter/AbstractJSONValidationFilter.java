@@ -18,12 +18,22 @@ import org.json.JSONTokener;
 import me.tyru.json.hyper.schema.HyperSchema;
 import me.tyru.json.hyper.schema.HyperSchemaBuilder;
 
+/**
+ * JAX-RS filter of abstract class. A user can extends this class to easily
+ * implement JSON validation filter.
+ *
+ * NOTE: A user must provide {@code @Named("JSONValidationFilter.hyperSchema")}
+ * injectee to inject this class.
+ *
+ * @author tyru
+ *
+ */
 @Dependent
 public abstract class AbstractJSONValidationFilter implements ContainerRequestFilter {
 
 	/**
-	 * This bean will be injected ordinarily by derived class on another project.
-	 * Why this is
+	 * This bean will be injected ordinarily by derived class on another
+	 * project.
 	 */
 	@SuppressWarnings("cdi-ambiguous-dependency")
 	@Inject
