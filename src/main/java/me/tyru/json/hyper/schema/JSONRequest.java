@@ -24,5 +24,5 @@ interface JSONRequest {
 
 	String getEntityWithKeepingStream(String charset) throws IOException;
 
-	MultivaluedMap<String, String> getQueryParameters();
+	MultivaluedMap<String, String> getQueryParameters() throws IOException;
 }
