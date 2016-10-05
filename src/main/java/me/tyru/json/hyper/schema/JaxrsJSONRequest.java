@@ -13,6 +13,7 @@ class JaxrsJSONRequest implements JSONRequest {
 
 	public JaxrsJSONRequest(ContainerRequestContext context) {
 		Objects.requireNonNull(context, "context");
+		Objects.requireNonNull(context.getMediaType(), "context.getMediaType()");
 		Objects.requireNonNull(context.getMediaType().getType(), "context.getMediaType().getType()");
 		Objects.requireNonNull(context.getMediaType().getSubtype(), "context.getMediaType().getSubtype()");
 		this.context = context;

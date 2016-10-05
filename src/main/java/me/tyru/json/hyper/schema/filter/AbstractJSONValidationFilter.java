@@ -32,8 +32,8 @@ import me.tyru.json.hyper.schema.HyperSchemaBuilder;
 public abstract class AbstractJSONValidationFilter implements ContainerRequestFilter {
 
 	/**
-	 * This bean will be injected ordinarily by derived class on another
-	 * project.
+	 * This bean will be injected by ordinarily derived class or another class
+	 * on another project.
 	 */
 	@SuppressWarnings("cdi-ambiguous-dependency")
 	@Inject
