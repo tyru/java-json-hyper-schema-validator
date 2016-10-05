@@ -84,7 +84,7 @@ public class HyperSchemaBuilder {
 
 	private static void requireKey(JSONObject hyperSchema, String key, Class<?> cls, String pointer) {
 		if (!hyperSchema.has(key)) {
-			throw new IllegalArgumentException("'" + pointer + " must exist in JSON");
+			throw new IllegalArgumentException("'" + pointer + "' must exist in JSON");
 		}
 		if (!cls.isInstance(hyperSchema.get(key))) {
 			throw new IllegalArgumentException("'" + pointer + "' must be the instance of " + cls.getName());

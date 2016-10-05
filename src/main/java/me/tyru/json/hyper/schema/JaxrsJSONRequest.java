@@ -26,7 +26,7 @@ class JaxrsJSONRequest implements JSONRequest {
 
 	@Override
 	public String getHref() {
-		return context.getUriInfo().getPath();
+		return context.getUriInfo().getRequestUri().getPath();
 	}
 
 	@Override

@@ -27,19 +27,17 @@ class ServletJSONRequest implements JSONRequest {
 
 	@Override
 	public String getMethod() {
-		// XXX
 		return request.getMethod();
 	}
 
 	@Override
 	public String getHref() {
-		// XXX
 		return request.getRequestURI();
 	}
 
 	@Override
 	public String getEncType() {
-		// XXX
+		// TODO: Get rid of "; charset=UTF-8"
 		return request.getContentType();
 	}
 
