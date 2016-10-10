@@ -4,7 +4,11 @@ JSON Hyper Schema validator for java, based on the org.json API and [everit-org/
 
 # Examples
 
-See [tyru/jaxrs-helloapp (f052d59)](https://github.com/tyru/jaxrs-helloapp/tree/f052d591c553e7284eade8a7a163d4b9b3d3237d).
+* JAX-RS example
+  * [JSONValidationFilterImpl.java @ tyru/jaxrs-helloapp (6884db4)](https://github.com/tyru/jaxrs-helloapp/blob/6884db4b93f1ad6f2d874f0b8c54896911d5016f/src/main/java/com/github/tyru/jaxrshelloapp/filter/JSONValidationFilterImpl.java)
+* Spring MVC example
+  * [SpringJSONValidationFilter.java @ tyru/spring-boot-helloapp (e09c2c5)](https://github.com/tyru/spring-boot-helloapp/blob/e09c2c5b4ba91aaddf51203184f595150bae2508/src/main/java/com/github/tyru/spring/boot/helloapp/filter/SpringJSONValidationFilter.java)
+  * [HelloApp.java @ tyru/spring-boot-helloapp (91dcbd9)](https://github.com/tyru/spring-boot-helloapp/blob/91dcbd95b5cfe66cc340861869d75939454c243b/src/main/java/com/github/tyru/spring/boot/helloapp/HelloApp.java#L34-L38)
 
 # Motivation
 
