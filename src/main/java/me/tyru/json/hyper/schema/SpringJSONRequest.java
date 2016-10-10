@@ -58,7 +58,11 @@ public class SpringJSONRequest implements JSONRequest {
 
 		@Override
 		public MultivaluedMap<String, String> getQueryParameters() {
-		    return Arrays.stream(requestUri.getQuery().split("&"))
+		    final String query = requestUri.getQuery();
+		    if (query == null) {
+		    	return new MultivaluedHashMap<>(0);
+		    }
+			return Arrays.stream(query.split("&"))
 		            .map(this::splitQueryParameter)
 		            .collect(Collectors.groupingBy(
 		            		SimpleImmutableEntry::getKey,
