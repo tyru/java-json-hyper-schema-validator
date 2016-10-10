@@ -18,7 +18,5 @@ So I created the validator library which:
 # Requirements
 
 * Java SE 8
-* If you want JAX-RS support
-  * JAX-RS 2.0 (Java EE 7)
-* If you want Spring support
-  * Spring ver x.y.z
+* Support JAX-RS 2.0 (Java EE 7) or later (if you want JAX-RS support)
+* Support Spring MVC 4.2.0.RELEASE or later (if you want Spring MVC support)
