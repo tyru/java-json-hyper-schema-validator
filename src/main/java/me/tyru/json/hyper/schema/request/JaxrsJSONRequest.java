@@ -1,4 +1,4 @@
-package me.tyru.json.hyper.schema;
+package me.tyru.json.hyper.schema.request;
 
 import java.io.IOException;
 import java.io.UncheckedIOException;

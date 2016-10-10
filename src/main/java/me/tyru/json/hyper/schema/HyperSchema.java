@@ -16,6 +16,10 @@ import javax.ws.rs.container.ContainerRequestContext;
 import org.everit.json.schema.Schema;
 import org.json.JSONObject;
 
+import me.tyru.json.hyper.schema.request.JSONRequest;
+import me.tyru.json.hyper.schema.request.JaxrsJSONRequest;
+import me.tyru.json.hyper.schema.request.ServletJSONRequest;
+
 public class HyperSchema {
 
 	public static final String DEFAULT_ENC_TYPE = "application/json";

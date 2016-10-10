@@ -18,8 +18,8 @@ import org.springframework.web.context.request.ServletWebRequest;
 import org.springframework.web.servlet.mvc.method.annotation.RequestBodyAdviceAdapter;
 
 import me.tyru.json.hyper.schema.HyperSchema;
-import me.tyru.json.hyper.schema.JSONRequest;
-import me.tyru.json.hyper.schema.SpringJSONRequest;
+import me.tyru.json.hyper.schema.request.JSONRequest;
+import me.tyru.json.hyper.schema.request.SpringJSONRequest;
 
 public abstract class AbstractSpringJSONValidationFilter extends RequestBodyAdviceAdapter {
 
