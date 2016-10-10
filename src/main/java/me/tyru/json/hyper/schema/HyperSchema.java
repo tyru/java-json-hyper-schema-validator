@@ -1,6 +1,7 @@
 package me.tyru.json.hyper.schema;
 
 import java.io.IOException;
+import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -110,7 +111,7 @@ public class HyperSchema {
 	 * @throws IOException
 	 */
 	public void validate(ContainerRequestContext context) throws IOException {
-		validate(JSONRequest.of(context), "UTF-8");
+		validate(JaxrsJSONRequest.of(context), "UTF-8");
 	}
 
 	/**
@@ -120,18 +121,19 @@ public class HyperSchema {
 	 * @throws IOException
 	 */
 	public void validate(ContainerRequestContext context, String charset) throws IOException {
-		validate(JSONRequest.of(context), charset);
+		validate(JaxrsJSONRequest.of(context), charset);
 	}
 
 	/**
-	 * HttpServletRequest support. This is same as {@code validate(request, "UTF-8")}.
+	 * HttpServletRequest support. This is same as
+	 * {@code validate(request, "UTF-8")}.
 	 *
 	 * @see {@link HyperSchema#validate(HttpServletRequest, String)}
 	 * @param request
 	 * @throws IOException
 	 */
 	public void validate(HttpServletRequest request) throws IOException {
-		validate(JSONRequest.of(request), "UTF-8");
+		validate(ServletJSONRequest.of(request), "UTF-8");
 	}
 
 	/**
@@ -141,10 +143,29 @@ public class HyperSchema {
 	 * @throws IOException
 	 */
 	public void validate(HttpServletRequest request, String charset) throws IOException {
-		validate(JSONRequest.of(request), charset);
+		validate(ServletJSONRequest.of(request), charset);
 	}
 
-	private void validate(JSONRequest req, String charset) throws IOException {
+	/**
+	 * Validate JSONRequest type's value which may be defined by user by
+	 * implementing JSONRequest interface.
+	 *
+	 * @param request
+	 * @throws UncheckedIOException
+	 */
+	public void validate(JSONRequest req) {
+		validate(req, "UTF-8");
+	}
+
+	/**
+	 * Validate JSONRequest type's value which may be defined by user by
+	 * implementing JSONRequest interface.
+	 *
+	 * @param request
+	 * @param charset
+	 * @throws UncheckedIOException
+	 */
+	public void validate(JSONRequest req, String charset) {
 		Objects.requireNonNull(req, "request");
 		Objects.requireNonNull(charset, "charset");
 		Objects.requireNonNull(req.getEncType(), "req.getEncType()");
@@ -171,15 +192,16 @@ public class HyperSchema {
 	 *
 	 * @param context
 	 * @param charset
-	 * @throws IOException
+	 * @throws UncheckedIOException
 	 */
-	private void validateEntity(JSONRequest req, String charset) throws IOException {
+	private void validateEntity(JSONRequest req, String charset) {
 		String method = req.getMethod();
 		String href = req.getHref();
 		String encType = req.getEncType();
 		if (ALLOW_ENTITY_METHODS.contains(method)) {
 			String json = req.getEntityWithKeepingStream(charset);
 			if (json == null || json.isEmpty()) {
+				// TODO: Must above methods contain entity?
 				return;
 			}
 			validate(method, href, encType, new JSONObject(json));

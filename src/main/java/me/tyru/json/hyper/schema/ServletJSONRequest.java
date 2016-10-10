@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.util.Collections;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import javax.servlet.ReadListener;
@@ -17,12 +18,16 @@ import javax.ws.rs.core.MultivaluedMap;
 
 import org.apache.commons.io.IOUtils;
 
-class ServletJSONRequest implements JSONRequest {
-	private HttpServletRequest request;
+public class ServletJSONRequest implements JSONRequest {
+	private BufferedServletRequestWrapper request;
 	private Supplier<MultivaluedMap<String, String>> queryParams = () -> createQueryParameters();
 
-	public ServletJSONRequest(HttpServletRequest request) {
-		this.request = request;
+	public static ServletJSONRequest of(HttpServletRequest request) throws IOException {
+		return new ServletJSONRequest(request);
+	}
+
+	private ServletJSONRequest(HttpServletRequest request) throws IOException {
+		this.request = new BufferedServletRequestWrapper(request);
 	}
 
 	@Override
@@ -37,26 +42,37 @@ class ServletJSONRequest implements JSONRequest {
 
 	@Override
 	public String getEncType() {
-		// TODO: Get rid of "; charset=UTF-8"
-		return request.getContentType();
+		final String encType = request.getContentType();
+		Objects.requireNonNull(encType);
+		// Get rid of string after {type}/{subtype} like "; charset=UTF-8" (XXX:
+		// Is this really necessary?)
+		return encType.replaceFirst(";.*", "");
 	}
 
+	/**
+	 * @throws UncheckedIOException
+	 */
 	@Override
-	public String getEntityWithKeepingStream(String charset) throws IOException {
-		return IOUtils.toString(new BufferedServletRequestWrapper(request).getInputStream(), charset);
-	}
-
-	@Override
-	public MultivaluedMap<String, String> getQueryParameters() throws IOException {
+	public String getEntityWithKeepingStream(String charset) {
 		try {
-			return queryParams.get();
-		} catch (UncheckedIOException e) {
-			throw e.getCause();
+			return IOUtils.toString(request.getInputStream(), charset);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
 		}
 	}
 
 	/**
-	 * This method was invoked at the first time of creation of 'queryParams' instance.
+	 * @throws UncheckedIOException
+	 */
+	@Override
+	public MultivaluedMap<String, String> getQueryParameters() {
+		return queryParams.get();
+	}
+
+	/**
+	 * This method was invoked at the first time of creation of 'queryParams'
+	 * instance.
+	 *
 	 * @return created instance
 	 */
 	private synchronized MultivaluedMap<String, String> createQueryParameters() {
@@ -83,7 +99,9 @@ class ServletJSONRequest implements JSONRequest {
 		}
 
 		/**
-		 * This method was invoked at the second time or later of creation of 'queryParams' instance.
+		 * This method was invoked at the second time or later of creation of
+		 * 'queryParams' instance.
+		 *
 		 * @return created instance
 		 */
 		@Override
@@ -91,67 +109,67 @@ class ServletJSONRequest implements JSONRequest {
 			return instance;
 		}
 	}
-}
 
-class BufferedServletInputStream extends ServletInputStream {
+	private static class BufferedServletInputStream extends ServletInputStream {
 
-	private ByteArrayInputStream inputStream;
+		private ByteArrayInputStream inputStream;
 
-	public BufferedServletInputStream(byte[] buffer) {
-		this.inputStream = new ByteArrayInputStream(buffer);
-	}
-
-	@Override
-	public int available() throws IOException {
-		return inputStream.available();
-	}
-
-	@Override
-	public int read() throws IOException {
-		return inputStream.read();
-	}
-
-	@Override
-	public int read(byte[] b, int off, int len) throws IOException {
-		return inputStream.read(b, off, len);
-	}
-
-	@Override
-	public boolean isFinished() {
-		return inputStream.available() == 0;
-	}
-
-	@Override
-	public boolean isReady() {
-		return true;
-	}
-
-	@Override
-	public void setReadListener(ReadListener arg0) {
-		throw new UnsupportedOperationException("Not implemented");
-	}
-}
-
-class BufferedServletRequestWrapper extends HttpServletRequestWrapper {
-
-	private byte[] buffer;
-
-	public BufferedServletRequestWrapper(HttpServletRequest request) throws IOException {
-		super(request);
-
-		InputStream is = request.getInputStream();
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		byte buff[] = new byte[1024];
-		int read;
-		while ((read = is.read(buff)) > 0) {
-			baos.write(buff, 0, read);
+		public BufferedServletInputStream(byte[] buffer) {
+			this.inputStream = new ByteArrayInputStream(buffer);
 		}
 
-		this.buffer = baos.toByteArray();
+		@Override
+		public int available() throws IOException {
+			return inputStream.available();
+		}
+
+		@Override
+		public int read() throws IOException {
+			return inputStream.read();
+		}
+
+		@Override
+		public int read(byte[] b, int off, int len) throws IOException {
+			return inputStream.read(b, off, len);
+		}
+
+		@Override
+		public boolean isFinished() {
+			return inputStream.available() == 0;
+		}
+
+		@Override
+		public boolean isReady() {
+			return true;
+		}
+
+		@Override
+		public void setReadListener(ReadListener arg0) {
+			throw new UnsupportedOperationException("Not implemented");
+		}
 	}
 
-	@Override
-	public ServletInputStream getInputStream() throws IOException {
-		return new BufferedServletInputStream(this.buffer);
+	private static class BufferedServletRequestWrapper extends HttpServletRequestWrapper {
+
+		private byte[] buffer;
+
+		public BufferedServletRequestWrapper(HttpServletRequest request) throws IOException {
+			super(request);
+
+			InputStream is = request.getInputStream();
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			byte buff[] = new byte[1024];
+			int read;
+			while ((read = is.read(buff)) > 0) {
+				baos.write(buff, 0, read);
+			}
+
+			this.buffer = baos.toByteArray();
+		}
+
+		@Override
+		public ServletInputStream getInputStream() throws IOException {
+			return new BufferedServletInputStream(this.buffer);
+		}
 	}
 }

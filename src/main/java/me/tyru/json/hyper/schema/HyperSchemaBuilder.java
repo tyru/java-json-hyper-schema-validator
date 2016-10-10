@@ -1,5 +1,7 @@
 package me.tyru.json.hyper.schema;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -8,6 +10,7 @@ import org.everit.json.schema.Schema;
 import org.everit.json.schema.loader.SchemaLoader;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.json.JSONTokener;
 
 import me.tyru.json.hyper.schema.exception.DuplicateLinkDefinitionException;
 
@@ -31,6 +34,20 @@ public class HyperSchemaBuilder {
 		HyperSchemaBuilder builder = new HyperSchemaBuilder();
 		builder.hyperSchema = hyperSchema;
 		return builder;
+	}
+
+	/**
+	 * This creates {@link HyperSchema} instance from given filename.
+	 * Given filename is passed to {@link Class#getResourceAsStream(String)}.
+	 *
+	 * @param hyperSchema
+	 * @return HyperSchemaBuilder
+	 */
+	public static HyperSchema createHyperSchema(String filename) throws IOException {
+		try (InputStream inputStream = HyperSchemaBuilder.class.getResourceAsStream(filename)) {
+			JSONObject json = new JSONObject(new JSONTokener(inputStream));
+			return HyperSchemaBuilder.hyperSchema(json).build();
+		}
 	}
 
 	/**
