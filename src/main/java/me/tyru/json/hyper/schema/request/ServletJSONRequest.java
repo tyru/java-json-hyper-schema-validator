@@ -22,12 +22,25 @@ public class ServletJSONRequest implements JSONRequest {
 	private BufferedServletRequestWrapper request;
 	private Supplier<MultivaluedMap<String, String>> queryParams = () -> createQueryParameters();
 
-	public static ServletJSONRequest of(HttpServletRequest request) throws IOException {
+	/**
+	 * @param request
+	 * @return
+	 * @throws UncheckedIOException
+	 */
+	public static ServletJSONRequest of(HttpServletRequest request) {
 		return new ServletJSONRequest(request);
 	}
 
-	private ServletJSONRequest(HttpServletRequest request) throws IOException {
-		this.request = new BufferedServletRequestWrapper(request);
+	/**
+	 * @param request
+	 * @throws UncheckedIOException
+	 */
+	private ServletJSONRequest(HttpServletRequest request) {
+		try {
+			this.request = new BufferedServletRequestWrapper(request);
+		} catch (IOException e) {
+			throw new UncheckedIOException(e);
+		}
 	}
 
 	@Override
@@ -76,11 +89,7 @@ public class ServletJSONRequest implements JSONRequest {
 	 */
 	private synchronized MultivaluedMap<String, String> createQueryParameters() {
 		if (!(queryParams instanceof CreatedSupplier)) {
-			try {
-				queryParams = new CreatedSupplier(request);
-			} catch (IOException e) {
-				throw new UncheckedIOException(e);
-			}
+			queryParams = new CreatedSupplier(request);
 		}
 		return queryParams.get();
 	}
@@ -88,9 +97,14 @@ public class ServletJSONRequest implements JSONRequest {
 	private static class CreatedSupplier implements Supplier<MultivaluedMap<String, String>> {
 		private final MultivaluedMap<String, String> instance;
 
-		public CreatedSupplier(HttpServletRequest request) throws IOException {
+		public CreatedSupplier(HttpServletRequest request) {
 			MultivaluedMap<String, String> tmp = new MultivaluedHashMap<>();
-			BufferedServletRequestWrapper req = new BufferedServletRequestWrapper(request);
+			BufferedServletRequestWrapper req;
+			try {
+				req = new BufferedServletRequestWrapper(request);
+			} catch (IOException e) {
+				throw new UncheckedIOException(e);
+			}
 			for (String key : Collections.list(req.getParameterNames())) {
 				tmp.addAll(key, req.getParameterValues(key));
 			}

@@ -1,6 +1,5 @@
 package me.tyru.json.hyper.schema;
 
-import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -110,9 +109,9 @@ public class HyperSchema {
 	 *
 	 * @see {@link HyperSchema#validate(ContainerRequestContext, String)}
 	 * @param context
-	 * @throws IOException
+	 * @throws UncheckedIOException
 	 */
-	public void validate(ContainerRequestContext context) throws IOException {
+	public void validate(ContainerRequestContext context) {
 		validate(JaxrsJSONRequest.of(context), "UTF-8");
 	}
 
@@ -120,9 +119,9 @@ public class HyperSchema {
 	 * JAX-RS support. This is same as {@code validate(context, "UTF-8")}.
 	 *
 	 * @param context
-	 * @throws IOException
+	 * @throws UncheckedIOException
 	 */
-	public void validate(ContainerRequestContext context, String charset) throws IOException {
+	public void validate(ContainerRequestContext context, String charset) {
 		validate(JaxrsJSONRequest.of(context), charset);
 	}
 
@@ -132,9 +131,9 @@ public class HyperSchema {
 	 *
 	 * @see {@link HyperSchema#validate(HttpServletRequest, String)}
 	 * @param request
-	 * @throws IOException
+	 * @throws UncheckedIOException
 	 */
-	public void validate(HttpServletRequest request) throws IOException {
+	public void validate(HttpServletRequest request) {
 		validate(ServletJSONRequest.of(request), "UTF-8");
 	}
 
@@ -142,9 +141,9 @@ public class HyperSchema {
 	 * HttpServletRequest support.
 	 *
 	 * @param request
-	 * @throws IOException
+	 * @throws UncheckedIOException
 	 */
-	public void validate(HttpServletRequest request, String charset) throws IOException {
+	public void validate(HttpServletRequest request, String charset) {
 		validate(ServletJSONRequest.of(request), charset);
 	}
 
