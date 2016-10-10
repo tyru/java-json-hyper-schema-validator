@@ -37,10 +37,8 @@ public class HyperSchema {
 	// TODO: Create annotation to make compilation error when
 	// being used by a code outside this package.
 	HyperSchema(Map<EndPoint, Schema> routes, boolean validateMediaType) {
-		Objects.requireNonNull(routes, "routes must not be null");
-		Objects.requireNonNull(validateMediaType, "validateMediaType must not be null");
-		this.routes = routes;
-		this.validateMediaType = validateMediaType;
+		this.routes = Objects.requireNonNull(routes, "routes must not be null");
+		this.validateMediaType = Objects.requireNonNull(validateMediaType, "validateMediaType must not be null");
 	}
 
 	/**

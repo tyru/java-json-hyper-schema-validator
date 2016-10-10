@@ -42,8 +42,7 @@ public class ServletJSONRequest implements JSONRequest {
 
 	@Override
 	public String getEncType() {
-		final String encType = request.getContentType();
-		Objects.requireNonNull(encType);
+		final String encType = Objects.requireNonNull(request.getContentType());
 		// Get rid of string after {type}/{subtype} like "; charset=UTF-8" (XXX:
 		// Is this really necessary?)
 		return encType.replaceFirst(";.*", "");

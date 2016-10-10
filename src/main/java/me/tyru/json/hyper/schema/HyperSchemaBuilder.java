@@ -30,9 +30,8 @@ public class HyperSchemaBuilder {
 	 * @return HyperSchemaBuilder
 	 */
 	public static HyperSchemaBuilder hyperSchema(JSONObject hyperSchema) {
-		Objects.requireNonNull(hyperSchema, "hyperSchema must not be null");
 		HyperSchemaBuilder builder = new HyperSchemaBuilder();
-		builder.hyperSchema = hyperSchema;
+		builder.hyperSchema = Objects.requireNonNull(hyperSchema, "hyperSchema must not be null");
 		return builder;
 	}
 

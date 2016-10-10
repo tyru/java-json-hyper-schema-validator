@@ -25,13 +25,10 @@ public class EndPoint {
 	}
 
 	public static EndPoint of(String method, String href, String encType) {
-		Objects.requireNonNull(method, "method must not be null");
-		Objects.requireNonNull(href, "href must not be null");
-		Objects.requireNonNull(encType, "encType must not be null");
 		EndPoint obj = new EndPoint();
-		obj.method = method;
-		obj.href = href;
-		obj.encType = encType;
+		obj.method = Objects.requireNonNull(method, "method must not be null");
+		obj.href = Objects.requireNonNull(href, "href must not be null");
+		obj.encType = Objects.requireNonNull(encType, "encType must not be null");
 		return obj;
 	}
 

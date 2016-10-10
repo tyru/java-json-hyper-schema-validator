@@ -3,6 +3,7 @@ package me.tyru.json.hyper.schema;
 import java.net.URI;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 import javax.ws.rs.core.MultivaluedHashMap;
@@ -27,9 +28,9 @@ public class SpringJSONRequest implements JSONRequest {
 				final String method, final URI requestUri,
 				final HttpHeaders headers, final String body)
 		{
-			this.method = method;
-			this.requestUri = requestUri;
-			this.headers = headers;
+			this.method = Objects.requireNonNull(method);
+			this.requestUri = Objects.requireNonNull(requestUri);
+			this.headers = Objects.requireNonNull(headers);
 			this.body = body;
 		}
 
